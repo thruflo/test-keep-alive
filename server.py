@@ -3,17 +3,19 @@ import gevent
 import os
 
 settings = {
+    'start_delay': int(os.environ.get('START_DELAY', 10)),
+    'incr_delay': int(os.environ.get('INCR_DELAY', 10)),
     'max_delay': int(os.environ.get('MAX_DELAY', 120)),
     'use_empty_strings': bool(os.environ.get('USE_EMPTY_STRINGS', False)),
 }
 
 def stream():
-    i = 0
+    delay = 0 + settings['start_delay']
     message = '' if settings['use_empty_strings'] else '{0}\r\n'
-    while i < settings['max_delay']:
-        i = i + 2
-        gevent.sleep(i)
-        yield message.format(i)
+    while delay < settings['max_delay']:
+        yield message.format(delay)
+        gevent.sleep(delay)
+        delay = delay + settings['incr_delay']
     yield '\r\n'
     yield 'Done!'
 
