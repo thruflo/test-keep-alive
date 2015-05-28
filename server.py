@@ -18,7 +18,7 @@ def stream():
         gevent.sleep(delay)
         delay = delay + settings['incr_delay']
     payload = json.dumps({'status': u'Done'})
-    yield message.format(payload)
+    yield payload
 
 def app(environ, start_response):
     headers = [
