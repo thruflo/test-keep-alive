@@ -1,5 +1,6 @@
 
 import gevent
+import json
 import os
 
 settings = {
@@ -16,8 +17,8 @@ def stream():
         yield message.format(delay)
         gevent.sleep(delay)
         delay = delay + settings['incr_delay']
-    yield '\r\n'
-    yield 'Done!'
+    payload = json.dumps({'status': u'Done'})
+    yield message.format(payload)
 
 def app(environ, start_response):
     headers = [
