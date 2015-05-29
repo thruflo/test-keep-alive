@@ -4,25 +4,24 @@ import json
 import os
 import time
 
-settings = {
-    'interval': int(os.environ.get('INTERVAL', 5)),
-    'timeout': int(os.environ.get('TIMEOUT', 65)),
-    'use_empty_strings': bool(os.environ.get('USE_EMPTY_STRINGS', False)),
-}
+ACK = '\0'
+INTERVAL = int(os.environ.get('INTERVAL', 15))
+TIMEOUT = int(os.environ.get('TIMEOUT', 80))
 
 def stream():
-    delay = settings['interval']
-    deadline = time.time() + settings['timeout']
-    message = '' if settings['use_empty_strings'] else '\0'
+    t1 = time.time()
+    ack_at = t1 + INTERVAL
+    out_at = t1 + TIMEOUT
     while True:
-        if time.time() > deadline:
+        gevent.sleep(1)
+        tn = time.time()
+        if tn > out_at:
             break
-        # msg = message.format(delay)
-        print message
-        yield message
-        gevent.sleep(delay)
+        if tn < ack_at:
+            continue
+        ack_at = tn + INTERVAL
+        yield ACK
     payload = json.dumps({'status': u'Done'})
-    print payload
     yield payload
 
 def app(environ, start_response):
