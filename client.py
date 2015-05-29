@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import argparse
+import json
 import requests
 
 def parse_args():
@@ -29,6 +30,11 @@ def main(host, should_stream, force_close):
             headers['Connection'] = 'Close'
         r = requests.get(args.host, headers=headers)
         print r.text
+        try:
+            print json.loads(r.text)
+        except Exception:
+            pass
+    print r.status_code
 
 if __name__ == '__main__':
     args = parse_args()

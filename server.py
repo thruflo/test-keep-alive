@@ -2,30 +2,34 @@
 import gevent
 import json
 import os
+import time
 
 settings = {
-    'start_delay': int(os.environ.get('START_DELAY', 10)),
-    'incr_delay': int(os.environ.get('INCR_DELAY', 10)),
-    'max_delay': int(os.environ.get('MAX_DELAY', 120)),
+    'interval': int(os.environ.get('INTERVAL', 5)),
+    'timeout': int(os.environ.get('TIMEOUT', 120)),
     'use_empty_strings': bool(os.environ.get('USE_EMPTY_STRINGS', False)),
 }
 
 def stream():
-    delay = 0 + settings['start_delay']
+    delay = settings['interval']
+    deadline = time.time() + settings['timeout']
     message = '' if settings['use_empty_strings'] else '{0}\r\n'
-    while delay < settings['max_delay']:
-        yield message.format(delay)
+    while True:
+        if time.time() > deadline:
+            break
+        msg = message.format(delay)
+        print msg
+        yield msg
         gevent.sleep(delay)
-        delay = delay + settings['incr_delay']
     payload = json.dumps({'status': u'Done'})
+    print payload
     yield payload
 
 def app(environ, start_response):
     headers = [
         ("Content-Type", "text/plain"),
+        ("Connection", "Keep-Alive"),
     ]
-    if environ.get('HTTP_CONNECTION') == 'keep-alive':
-        headers.append(("Connection", "Keep-Alive"))
     print headers
     start_response("200 OK", headers=headers)
     return stream()
